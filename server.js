@@ -26,28 +26,32 @@ console.log('Connected at http://localhost:' + port);
 
 var apiRoutes = express.Router();
  
-apiRoutes.get('/', function(req, res) {
-  res.json({ message: 'Welcome to Syblium API on earth!' });
-});
-
 // route to return all users (GET http://localhost:8080/api/users)
 apiRoutes.get('/users', function (req, res) {
     persAssist.list({include_docs: true}, function (err, response) {
         res.json(response.rows);
     });
-});   
-apiRoutes.post('/signUp', function (req, res) {
-    
-    // create a sample user
+});  
+ 
+apiRoutes.post('/signUp', function (req, res) { 
     var data = req.body;
     res.send('Added:' + data);
-    // save the sample user
     persAssist.insert(data, function (err, body) {
         if (!err) {
-            //awesome
         }
         console.log('User saved successfully');
     });
 }); 
+
+apiRoutes.post('/checkUsers', function (req, res) {
+    persAssist.list({include_docs: true}, function (err, response) {
+        (response.rows).forEach(function(element) {
+            if(element.doc.username === req.body.username){
+                res.send({status:400});
+            }
+        }, this);        
+        res.send({status:200});
+    });
+});
 // apply the routes to our application with the prefix /api
 app.use('/api', apiRoutes);
