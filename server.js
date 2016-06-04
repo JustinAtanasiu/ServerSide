@@ -44,13 +44,16 @@ apiRoutes.post('/signUp', function (req, res) {
 }); 
 
 apiRoutes.post('/checkUsers', function (req, res) {
+    var testUsername = false;
     persAssist.list({include_docs: true}, function (err, response) {
         (response.rows).forEach(function(element) {
             if(element.doc.username === req.body.username){
                 res.send({status:400});
+                testUsername = true;
             }
         }, this);        
-        res.send({status:200});
+        if(!testUsername)
+            res.send({status:200});
     });
 });
 // apply the routes to our application with the prefix /api
