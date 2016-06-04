@@ -48,17 +48,25 @@ apiRoutes.get('/getInfo/:id', function (req, res) {
     persAssist.get(id, function (err, body) {
         if (!err) {
         }
+        delete body.password;
+        delete body.username;
         res.send(body);
         console.log('User saved successfully');
     });
 }); 
 
 apiRoutes.post('/saveInfo/:id', function (req, res) {
-    var id = req.url.split("/")[2];
-    persAssist.insert(req.body, id, function (err, body) {
+    var id = req.url.split("/")[2]; persAssist.get(id, function (err, bodyTwo) {
+        if (!err) {
+        }
+        req.body.password = bodyTwo.password;
+        req.body.username = bodyTwo.username;
+        persAssist.insert(req.body, id, function (err, body) {
         if (!err)
             console.log(body)
     });
+    });
+    
 });
 
 apiRoutes.post('/checkUsers', function (req, res) {
