@@ -43,6 +43,24 @@ apiRoutes.post('/signUp', function (req, res) {
     });
 }); 
 
+apiRoutes.get('/getInfo/:id', function (req, res) { 
+    var id = req.url.split("/")[2];
+    persAssist.get(id, function (err, body) {
+        if (!err) {
+        }
+        res.send(body);
+        console.log('User saved successfully');
+    });
+}); 
+
+apiRoutes.post('/saveInfo/:id', function (req, res) {
+    var id = req.url.split("/")[2];
+    persAssist.insert(req.body, id, function (err, body) {
+        if (!err)
+            console.log(body)
+    });
+});
+
 apiRoutes.post('/checkUsers', function (req, res) {
     var testUsername = false;
     persAssist.list({include_docs: true}, function (err, response) {
