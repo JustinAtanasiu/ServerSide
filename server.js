@@ -7,12 +7,12 @@ var jwt = require('jsonwebtoken');
 var config = require('./config');
 
 
-var test_db = nano.db.use('personalassistant');
+var persAssist = nano.db.use('personalassistant');
 var port = 8080;
 
 app.set('superSecret', config.secret); 
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(morgan('dev'));
@@ -24,20 +24,30 @@ app.get('/', function(req, res) {
 app.listen(port);
 console.log('Connected at http://localhost:' + port);
 
-app.get('/signUp', function (req, res) {
-    debugger;
+var apiRoutes = express.Router();
+ 
+apiRoutes.get('/', function(req, res) {
+  res.json({ message: 'Welcome to Syblium API on earth!' });
+});
+
+// route to return all users (GET http://localhost:8080/api/users)
+apiRoutes.get('/users', function (req, res) {
+    persAssist.list({include_docs: true}, function (err, response) {
+        res.json(response.rows);
+    });
+});   
+apiRoutes.post('/signUp', function (req, res) {
+    
     // create a sample user
-    var data = {
-        name: 'pikachu',
-        skills: ['thunder bolt', 'iron tail', 'quick attack', 'mega punch'],
-        type: 'electric'
-    };
-aaaaaaaaaaaa
+    var data = req.body;
+    res.send('Added:' + data);
     // save the sample user
-    test_db.insert(data, function (err, body) {
+    persAssist.insert(data, function (err, body) {
         if (!err) {
             //awesome
         }
         console.log('User saved successfully');
     });
-});
+}); 
+// apply the routes to our application with the prefix /api
+app.use('/api', apiRoutes);
