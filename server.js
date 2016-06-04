@@ -38,27 +38,37 @@ apiRoutes.post('/signUp', function (req, res) {
 
 apiRoutes.post('/checkUsers', function (req, res) {
     var testUsername = false;
-    persAssist.list({include_docs: true}, function (err, response) {
-        (response.rows).forEach(function(element) {
-            if(element.doc.username === req.body.username){
-                res.send({status:400});
-                testUsername = true;
-            }
-        }, this);        
-        if(!testUsername)
-            res.send({status:200});
+    persAssist.list({ include_docs: true }, function (err, response) {
+        if (response && response.rows)
+            (response.rows).forEach(function (element) {
+                if (element.doc.username === req.body.username) {
+                    res.send({ status: 400 });
+                    testUsername = true;
+                }
+            }, this);
+        if (!testUsername)
+            res.send({ status: 200 });
     });
 });
 
 apiRoutes.post('/authenticate', function (req, res) { 
    persAssist.list({include_docs: true}, function (err, response) {
        var foundUser = false;
-       response.rows.forEach(function(element) {
-           if(element.doc.username === req.body.username && element.doc.password === req.body.password){
-               foundUser = element.doc;
-           }
-       }, this);
-       if(foundUser){
+       if (response && response.rows){
+           response.rows.forEach(function (element) {
+               if (element.doc.username === req.body.username && element.doc.password === req.body.password) {
+                   foundUser = element.doc;
+               }
+           }, this);
+       }
+       else{
+           res.json({
+               success: false,
+               status: 503
+           });
+           return false;
+       }
+       if (foundUser) {
            var token = jwt.sign({id: foundUser._id}, app.get('superSecret'), {
                expiresIn: 86400 // expires in 24 hours
            });
@@ -73,7 +83,8 @@ apiRoutes.post('/authenticate', function (req, res) {
        }
        else{
             res.json({
-               success: false
+               success: false,
+               status: 404
            });
        }
     });
