@@ -4,6 +4,8 @@ var app = express();
 app.set('superSecret', config.secret); 
 app.set('database', config.database);
 app.set('dbSecret', config.dbSecret);
+app.set('mail', config.mail); 
+app.set('forecastid', config.forecastid);
 var nano = require('nano')('http://'+app.get('database') + ':' + app.get('dbSecret') + '@localhost:5984');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
@@ -78,7 +80,6 @@ apiRoutes.post('/authenticate', function (req, res) {
            // return the information including token as JSON
            res.json({
                success: true,
-               message: 'Enjoy your token!',
                token: token,
                id: foundUser._id
            });
@@ -133,7 +134,7 @@ apiRoutes.post('/location', function (req, res) {
     var latitude = req.body.latitude;
     var longitude = req.body.longitude;
     var body = '';
-    http.get('http://nominatim.openstreetmap.org/reverse?email=justin.atanasiu@gmail.com&format=json&lat=' + latitude + '&lon=' + longitude, function (resp) {
+    http.get('http://nominatim.openstreetmap.org/reverse?email=' + app.get('mail') + '&format=json&lat=' + latitude + '&lon=' + longitude, function (resp) {
         resp.on('data', function (chunk) {
             body += chunk;
         });
@@ -151,7 +152,7 @@ apiRoutes.post('/weather', function (req, res) {
     var latitude = req.body.latitude;
     var longitude = req.body.longitude;
     var body = '';
-    https.get('https://api.forecast.io/forecast/2d4d24f3d98fd833669ca7ccd52a18bd/' + latitude + ',' + longitude + '?units=si', function (resp) {
+    https.get('https://api.forecast.io/forecast/' + app.get('forecastid') + '/' + latitude + ',' + longitude + '?units=si', function (resp) {
         resp.on('data', function (chunk) {
             body += chunk;
         });
