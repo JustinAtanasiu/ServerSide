@@ -1,17 +1,19 @@
-var nano = require('nano')('http://localhost:5984');
+var config = require('./config');
 var express = require('express');
 var app = express();
+app.set('superSecret', config.secret); 
+app.set('database', config.database);
+app.set('dbSecret', config.dbSecret);
+var nano = require('nano')('http://'+app.get('database') + ':' + app.get('dbSecret') + '@localhost:5984');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var jwt = require('jsonwebtoken'); 
-var config = require('./config');
+var http = require('http');
+var https = require('https');
 var crypto = require('crypto');
 
 var persAssist = nano.db.use('personalassistant');
 var port = 8080;
-
-app.set('superSecret', config.secret); 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -125,7 +127,43 @@ apiRoutes.get('/users', function (req, res) {
     persAssist.list({include_docs: true}, function (err, response) {
         //all users
     });
-});  
+});
+
+apiRoutes.post('/location', function (req, res) {
+    var latitude = req.body.latitude;
+    var longitude = req.body.longitude;
+    var body = '';
+    http.get('http://nominatim.openstreetmap.org/reverse?email=justin.atanasiu@gmail.com&format=json&lat=' + latitude + '&lon=' + longitude, function (resp) {
+        resp.on('data', function (chunk) {
+            body += chunk;
+        });
+
+        resp.on('end', function () {
+            var fbResponse = JSON.parse(body);
+            res.send(fbResponse);
+        });
+    }).on('error', function (e) {
+        console.log("Got error: " + e.message);
+    });
+});
+
+apiRoutes.post('/weather', function (req, res) {
+    var latitude = req.body.latitude;
+    var longitude = req.body.longitude;
+    var body = '';
+    https.get('https://api.forecast.io/forecast/2d4d24f3d98fd833669ca7ccd52a18bd/' + latitude + ',' + longitude + '?units=si', function (resp) {
+        resp.on('data', function (chunk) {
+            body += chunk;
+        });
+
+        resp.on('end', function () {
+            var fbResponse = JSON.parse(body);
+            res.send(fbResponse);
+        });
+    }).on('error', function (e) {
+        console.log("Got error: " + e.message);
+    });
+});        
 
 apiRoutes.get('/getInfo/:id', function (req, res) { 
     var id = req.url.split("/")[2];
