@@ -74,7 +74,7 @@ apiRoutes.post('/authenticate', function (req, res) {
        }
        if (foundUser) {
            var token = jwt.sign({id: foundUser._id}, app.get('superSecret'), {
-               expiresIn: 86400 // expires in 24 hours
+               expiresIn: 432000 // expires in 24 hours
            });
 
            // return the information including token as JSON
@@ -104,7 +104,7 @@ apiRoutes.use(function(req, res, next) {
     // verifies secret and checks exp
     jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
       if (err) {
-        return res.json({ success: false, message: 'Failed to authenticate token.' });    
+        return res.json({ success: false, message: 'Failed to authenticate token.', status: 402 });    
       } else {
         // if everything is good, save to request for use in other routes
         req.decoded = decoded;    
@@ -171,8 +171,10 @@ apiRoutes.get('/getInfo/:id', function (req, res) {
     persAssist.get(id, function (err, body) {
         if (!err) {
         }
-        delete body.password;
-        delete body.username;
+        if (body) {
+            delete body.password;
+            delete body.username;
+        }
         res.send(body);
         console.log('User saved successfully');
     });
