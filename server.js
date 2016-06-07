@@ -148,6 +148,24 @@ apiRoutes.post('/location', function (req, res) {
     });
 });
 
+apiRoutes.post('/searchLoc', function (req, res) {
+    var searchBox = req.body.searchBox;
+    var body = '';
+    https.get('https://api.teleport.org/api/cities/?search=' + searchBox + '&embed=city%3Asearch-results%2Fcity%3Aitem', function (resp) {
+        resp.on('data', function (chunk) {
+            body += chunk;
+        });
+
+        resp.on('end', function () {
+            var fbResponse = JSON.parse(body);
+            fbResponse._embedded['city:search-results'].splice(5);
+            res.send(fbResponse);
+        });
+    }).on('error', function (e) {
+        console.log("Got error: " + e.message);
+    });
+});       
+
 apiRoutes.post('/weather', function (req, res) {
     var latitude = req.body.latitude;
     var longitude = req.body.longitude;
