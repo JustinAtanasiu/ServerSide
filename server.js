@@ -124,11 +124,11 @@ apiRoutes.use(function(req, res, next) {
   }
 });
  
-apiRoutes.get('/users', function (req, res) {
-    persAssist.list({include_docs: true}, function (err, response) {
-        //all users
-    });
-});
+// apiRoutes.get('/users', function (req, res) {
+//     persAssist.list({include_docs: true}, function (err, response) {
+//         //all users
+//     });
+// });
 
 apiRoutes.post('/location', function (req, res) {
     var latitude = req.body.latitude;
